@@ -272,21 +272,25 @@ scTITANS_partial <- function(data_file,cell_metadata,gene_metadata,root_type,fdr
 	colnames(num) = mids
 
 	names(mids) = mids
-	de_obj = build_study(data=num,tme=mids,sampling="timecourse")
+	if (nrow(num)>1){
+		de_obj = build_study(data=num,tme=mids,sampling="timecourse")
 
-	full_model <- fullModel(de_obj)
-	null_model <- nullModel(de_obj)
-	full_matrix = fullMatrix(de_obj)
-	null_matrix = nullMatrix(de_obj)
-	#ef_obj <- fit_models(de_obj,stat.type = "lrt")
-	de_lrt <- lrt(de_obj, nullDistn = "normal",pi0=1)
-	sig_results <- qvalueObj(de_lrt)
-	pvalues <- sig_results$pvalues
-	qvalues <- sig_results$qvalues
-	lfdr <- sig_results$lfdr
-	pi0 <- sig_results$pi
-	index_sigClusters = which(qvalues < fdr_level)
-	qvalue_sigClusters = qvalues[index_sigClusters]
+		full_model <- fullModel(de_obj)
+		null_model <- nullModel(de_obj)
+		full_matrix = fullMatrix(de_obj)
+		null_matrix = nullMatrix(de_obj)
+		#ef_obj <- fit_models(de_obj,stat.type = "lrt")
+		de_lrt <- lrt(de_obj, nullDistn = "normal",pi0=1)
+		sig_results <- qvalueObj(de_lrt)
+		pvalues <- sig_results$pvalues
+		qvalues <- sig_results$qvalues
+		lfdr <- sig_results$lfdr
+		pi0 <- sig_results$pi
+		index_sigClusters = which(qvalues < fdr_level)
+		qvalue_sigClusters = qvalues[index_sigClusters]
 
-	write.table(qvalue_sigClusters,sprintf("SigClusters.fdr%s.txt",fdr_level),row.names=T,col.names=F,sep="\t")
+		write.table(qvalue_sigClusters,sprintf("SigClusters.fdr%s.txt",fdr_level),row.names=T,col.names=F,sep="\t")
+	}else{
+		print("Failed to find significant clusters.")
+	}
 }

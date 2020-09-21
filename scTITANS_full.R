@@ -6,18 +6,19 @@
 #(2) cell_metadata: file for cell metadata (row cells);if not provided, provide "none" 
 #(3) gene_metadata: file for gene metadata (row genes,header must contain gene_short_name); if not provided, provide "none" 
 #(4) indication: status of the matrix (normalized, filtered, none); if raw data is used, provide "none"
-#(5) sp: must be Human or Mouse
-#(6) tissue: organ, such as Liver; if not sure, provide "none"
-#(7) root_type: the name of root cluster; if not sure, provide "none"
-#(8) fdr_level: fdr level
-#(9) annotation: if cell annotation is required, provide T; else, provide F
+#(5) annotation: if cell annotation is required, provide T; else, provide F
+#(6) sp: must be Human or Mouse
+#(7) tissue: organ, such as Liver; if not sure, provide "none"
+#(8) root_type: the name of root cluster; if not sure, provide "none"
+#(9) fdr_level: fdr level
+
 
 #Example:
 #For a user with a raw matrix obtained from human liver with CellRanger, the following command will be ok (no cell annotation). 
-# result = scTITANS_full(data_file,"none","none","none","Human","Liver","none",0.01,"F")
+# result = scTITANS_full(data_file,"none","none","none","F","","","none",0.01)
 
 
-scTITANS_full <- function(data_file,cell_metadata,gene_metadata,indication,sp,organ,root_type,fdr_level,annotation){
+scTITANS_full <- function(data_file,cell_metadata,gene_metadata,indication,annotation,sp,organ,root_type,fdr_level){
 	if (!requireNamespace("BiocManager", quietly = TRUE))
     	install.packages("BiocManager")
 
@@ -470,21 +471,25 @@ scTITANS_full <- function(data_file,cell_metadata,gene_metadata,indication,sp,or
 	write.table(num,"NumberOfCells.in.eachcluster.along.pseudotime.txt",row.names=T,col.names=T,sep="\t")
 
 	names(mids) = mids
-	de_obj = build_study(data=num,tme=mids,sampling="timecourse")
+	if (nrow(num) >=2){ 
+		de_obj = build_study(data=num,tme=mids,sampling="timecourse")
 
-	full_model <- fullModel(de_obj)
-	null_model <- nullModel(de_obj)
-	full_matrix = fullMatrix(de_obj)
-	null_matrix = nullMatrix(de_obj)
+		full_model <- fullModel(de_obj)
+		null_model <- nullModel(de_obj)
+		full_matrix = fullMatrix(de_obj)
+		null_matrix = nullMatrix(de_obj)
 	#ef_obj <- fit_models(de_obj,stat.type = "lrt")
-	de_lrt <- lrt(de_obj, nullDistn = "normal",pi0=1)
-	sig_results <- qvalueObj(de_lrt)
-	pvalues <- sig_results$pvalues
-	qvalues <- sig_results$qvalues
-	lfdr <- sig_results$lfdr
-	pi0 <- sig_results$pi
-	index_sigClusters = which(qvalues < fdr_level)
-	qvalue_sigClusters = qvalues[index_sigClusters]
+		de_lrt <- lrt(de_obj, nullDistn = "normal",pi0=1)
+		sig_results <- qvalueObj(de_lrt)
+		pvalues <- sig_results$pvalues
+		qvalues <- sig_results$qvalues
+		lfdr <- sig_results$lfdr
+		pi0 <- sig_results$pi
+		index_sigClusters = which(qvalues < fdr_level)
+		qvalue_sigClusters = qvalues[index_sigClusters]
 
-	write.table(qvalue_sigClusters,sprintf("SigClusters.fdr%s.txt",fdr_level),row.names=T,col.names=F,sep="\t")
+		write.table(qvalue_sigClusters,sprintf("SigClusters.fdr%s.txt",fdr_level),row.names=T,col.names=F,sep="\t")
+	}else{
+		print("Failed to find significant clusters.")
+	}
 }
