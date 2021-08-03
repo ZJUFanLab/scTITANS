@@ -1,5 +1,7 @@
 # scTITANS
 ### Identifying key genes and cell subclusters for time-series single cell sequencing data
+# Cite
+Shao et al., Identify differential genes and cell subclusters from time-series scRNA-seq data using scTITANS, Computational and Structural Biotechnology Journal, Volume 19, 2021, Pages 4132-4141, [https://doi.org/10.1016/j.csbj.2021.07.016](https://doi.org/10.1016/j.csbj.2021.07.016)
 
 # Usage
 For users with differnt needs, two modes are provided. In the 'full' mode, only a file containing gene expression matrix (file_data), the status of the matrix (indication), the needs of cell annotation (annotation),the name of root cluster and fdr level are required.
